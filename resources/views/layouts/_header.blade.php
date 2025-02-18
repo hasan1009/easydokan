@@ -5,11 +5,11 @@
     </li>
     <!-- END TOGGLE NAVIGATION -->
     <!-- SEARCH -->
-    <li class="xn-search">
+    {{-- <li class="xn-search">
         <form role="form">
             <input type="text" name="search" placeholder="Search..." />
         </form>
-    </li>
+    </li> --}}
     <!-- END SEARCH -->
     <!-- SIGN OUT -->
     <li class="xn-icon-button pull-right">
@@ -17,7 +17,7 @@
     </li>
     <!-- END SIGN OUT -->
     <!-- MESSAGES -->
-    <li class="xn-icon-button pull-right">
+    {{-- <li class="xn-icon-button pull-right">
         <a href="#"><span class="fa fa-comments"></span></a>
         <div class="informer informer-danger">4</div>
         <div class="panel panel-primary animated zoomIn xn-drop-left xn-panel-dragging">
@@ -57,10 +57,10 @@
                 <a href="pages-messages.html">Show all messages</a>
             </div>
         </div>
-    </li>
+    </li> --}}
     <!-- END MESSAGES -->
     <!-- TASKS -->
-    <li class="xn-icon-button pull-right">
+    {{-- <li class="xn-icon-button pull-right">
         <a href="#"><span class="fa fa-tasks"></span></a>
         <div class="informer informer-warning">3</div>
         <div class="panel panel-primary animated zoomIn xn-drop-left xn-panel-dragging">
@@ -109,6 +109,6 @@
                 <a href="pages-tasks.html">Show all tasks</a>
             </div>
         </div>
-    </li>
+    </li> --}}
     <!-- END TASKS -->
 </ul>

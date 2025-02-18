@@ -7,92 +7,84 @@ use Str;
 
 class CustomerController extends Controller
 {
+
     public function add()  {
         
         $data['header_title']="Add New Customer";
-        return view('supplier.add', $data);
+        return view('customer.add', $data);
     }
 
     public function insert(Request $request)
 {
-    // Validate the incoming request
     $request->validate([
         'name' => 'required|string|max:255',
-        'description' => 'nullable|string|max:1000',
-        'paid' => 'nullable|numeric|min:0',
         'due' => 'nullable|numeric|min:0',
         'address' => 'nullable|string|max:500',
-        'email' => 'nullable|email|max:255|unique:supplier,email',
-        'mobile' => 'nullable|unique:supplier,mobile',
-        'bank_name' => 'nullable|string|max:255',
-        'bank_account_no' => 'nullable|string|max:50',
+        'mobile' => 'nullable|unique:customer,mobile',
         'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
     ]);
 
     try {
-        $supplier = new SupplierModel;
-        $supplier->name = trim($request->name);
-        $supplier->description = trim($request->description);
-        $supplier->paid = $request->filled('paid') ? floatval($request->paid) : 0;
-        $supplier->due = $request->filled('due') ? floatval($request->due) : 0;
-        $supplier->address = trim($request->address);
-        $supplier->email = trim($request->email);
-        $supplier->mobile = trim($request->mobile);
-        $supplier->bank_name = trim($request->bank_name);
-        $supplier->bank_account_no = trim($request->bank_account_no);
+        $customer = new CustomerModel;
+        $customer->name = trim($request->name);
+        $customer->due = $request->filled('due') ? floatval($request->due) : 0;
+        $customer->paid = $request->filled('paid') ? floatval($request->paid) : 0;
+        $customer->address = trim($request->address);
+        $customer->mobile = trim($request->mobile);
 
-        // Handle image upload
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
             $ext = $file->getClientOriginalExtension();
             $randomStr = date('Ymdhis') . Str::random(20);
             $fileName = strtolower($randomStr) . '.' . $ext;
-            $file->move('upload/supplier/', $fileName);
-            $supplier->photo = $fileName;
+            $file->move('upload/customer/', $fileName);
+            $customer->photo = $fileName;
         }
 
-        $supplier->save();
+        $customer->save();
 
-        return redirect("supplier/list")->with('success', 'One Supplier Successfully Added');
+        return redirect("customer/list")->with('success', 'One Customer Successfully Added');
     } catch (\Exception $e) {
-        return redirect("supplier/list")->with('error', 'Something Went Wrong: ' . $e->getMessage());
+        return redirect("customer/list")->with('error', 'Something Went Wrong: ' . $e->getMessage());
     }
 }
 
 
-public function list()  {
-        
-    $data['getRecord']=SupplierModel::getSupplier();
-    $data['header_title']="Suppliers List";
-    return view('supplier.list', $data);
+public function list(Request $request) {
+    $filters = $request->all(); // Get all filters from request
+
+    // Store filter values in session
+    session(['customer_filters' => $filters]);
+
+    $data['getRecord'] = CustomerModel::getCustomer($filters);
+    $data['header_title'] = "Customer List";
+
+    return view('customer.list', $data);
 }
 
 
+
 public function edit($id)  {
-    $data['getRecord'] = SupplierModel::getSingle($id);
-        $data['header_title']="Edit Supplier";
-        return view('supplier.edit', $data);
+    $data['getRecord'] = CustomerModel::getSingle($id);
+        $data['header_title']="Edit Customer";
+        return view('customer.edit', $data);
 }
 
 
 public function update($id, Request $request)  {
         
 
-    $supplier =  SupplierModel::getSingle($id);
-    $supplier->name = trim($request->name);
-    $supplier->description = trim($request->description);
-    $supplier->paid = $request->filled('paid') ? floatval($request->paid) : 0;
-    $supplier->due = $request->filled('due') ? floatval($request->due) : 0;
-    $supplier->address = trim($request->address);
-    $supplier->email = trim($request->email);
-    $supplier->mobile = trim($request->mobile);
-    $supplier->bank_name = trim($request->bank_name);
-    $supplier->bank_account_no = trim($request->bank_account_no);
+    $customer =  CustomerModel::getSingle($id);
+    $customer->name = trim($request->name);
+    $customer->due = $request->filled('due') ? floatval($request->due) : 0;
+    $customer->paid = $request->filled('paid') ? floatval($request->paid) : 0;
+    $customer->address = trim($request->address);
+    $customer->mobile = trim($request->mobile);
 
     if(!empty($request->file('photo'))){
 
-        if(!empty($product->getProfile())){
-            unlink('upload/supplier/'.$product->photo);
+        if(!empty($customer->getProfile())){
+            unlink('upload/customer/'.$customer->photo);
 
         }
 
@@ -100,21 +92,34 @@ public function update($id, Request $request)  {
         $file=$request->file('photo');
         $randomStr=date('Ymdhis').Str::random(20);
         $fileName=strtolower($randomStr).'.'.$ext;
-        $file->move('upload/supplier/',$fileName);
+        $file->move('upload/customer/',$fileName);
 
-        $supplier->photo=$fileName;
+        $customer->photo=$fileName;
        }
 
 
-       $supplier->save();
+       $customer->save();
 
-       return redirect("supplier/list")->with('succsess', 'Supplier successfully edited');
+       return redirect("customer/list")->with('succsess', 'Customer successfully edited');
     
 }
 
-public function print()  {
-    $data['getRecord'] =  SupplierModel::getSupplier();
-    $data['header_title']="Print Supplier";
-    return view('supplier.print',$data);
+public function print() {
+    $filters = session('customer_filters', []); // Retrieve filters from session
+
+    $data['getRecord'] = CustomerModel::getCustomer($filters);
+    $data['header_title'] = "Print Customer";
+
+    return view('customer.print', $data);
 }
+
+
+  public function paiddue($id, Request $request){
+    $customer =  CustomerModel::getSingle($id);
+    $customer->paid =$customer->paid + $request->paid;
+    $customer->due =$customer->due + $request->due;
+    $customer->save();
+
+    return back()->with('succsess', 'Customer successfully updated.');
+  } 
 }

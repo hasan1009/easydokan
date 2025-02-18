@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Print Customer List</title>
+    <title>Print Sell Details</title>
     <style type="text/css">
         @page {
             size: A4;
@@ -109,7 +109,7 @@
         <div class="title">
             <h1>Easy Dokan</h1>
             <h2>Manage Smarter, Grow Faster</h2>
-            <h4>Customer List</h4>
+            <h4>Sell Details</h4>
         </div>
         <img src="../upload\dokanlogo.png" alt="Easy Dokan Logo">
     </div>
@@ -119,52 +119,62 @@
         <table class="table-bg">
             <thead>
                 <tr>
-                    <th width='50'>আইডি</th>
-                    <th>ছবি</th>
-                    <th>গ্রাহকের নাম</th>
-                    <th>গ্রাহকের ঠিকানা</th>
-                    <th>মোবাইল</th>
-                    <th>গ্রাহকের কাছে পাওনা</th>
-                    <th>গ্রাহকের পাবে</th>
+                    <th width='50'>প্রোডাক্ট আইডি</th>
+                    <th width='50'>প্রোডাক্টের ছবি</th>
+                    <th>প্রোডাক্টের নাম</th>
+                    <th>বিক্রয়ের তারিখ</th>
+                    <th>ক্রয় মূল্য</th>
+                    <th>বিক্রয় মূল্য</th>
+                    <th>বিক্রয়ের পরিমান</th>
+                    <th>মোট ক্রয় মূল্য</th>
+                    <th>মোট বিক্রয় মূল্য</th>
+                    <th>মোট প্রফিট</th>
                 </tr>
             </thead>
             <tbody>
                 @php
-                    $totalDue = 0;
-                    $totalPaid = 0;
-
+                    $totalpurchaseamount = 0;
+                    $totalsellamount = 0;
+                    $profit = 0;
+                    $totalProfit = 0;
                 @endphp
                 @foreach ($getRecord as $value)
                     @php
-                        $totalDue += $value->due;
-                        $totalPaid += $value->paid;
-
+                        $totalpurchaseamount = $value->buy_price * $value->sell_quantity;
+                        $totalsellamount = $value->sell_price * $value->sell_quantity;
+                        $profit = $totalsellamount - $totalpurchaseamount;
+                        $totalProfit += $profit;
                     @endphp
                     <tr>
-                        <td class="text-center">{{ $value->id }}</td>
+                        <td class="text-center">{{ $value->product_id }}</td>
                         @if (!empty($value->getProfileDirect()))
                             <td><img src="{{ $value->getProfileDirect() }}" alt=""
                                     style="width:60px; height:60px; border-radius: 50%; border: 2px solid #ddd;">
                             </td>
                         @endif()
-                        <td>{{ $value->name }}</td>
-                        <td>{{ $value->address }}</td>
-                        <td>{{ $value->mobile }}</td>
-                        <td>{{ number_format($value->due, 2) }} টাকা</td>
-                        <td>{{ number_format($value->paid, 2) }} টাকা</td>
+                        <td>{{ $value->productname }}</td>
+                        <td>
+                            @if (!empty($value->sell_date))
+                                {{ date('d-m-Y', strtotime($value->sell_date)) }}
+                            @else
+                                No Data
+                            @endif
+                        </td>
+                        <td>{{ number_format($value->buy_price, 2) }} টাকা</td>
+                        <td>{{ number_format($value->sell_price, 2) }} টাকা</td>
+                        <td>{{ $value->sell_quantity }} {{ $value->unit }}</td>
+                        <td>{{ number_format($totalpurchaseamount, 2) }} টাকা</td>
+                        <td>{{ number_format($totalsellamount, 2) }} টাকা</td>
+                        <td>{{ number_format($profit, 2) }} টাকা</td>
+
                     </tr>
                 @endforeach
             </tbody>
             <tfoot>
                 <tr>
-                    <th colspan="5" style="text-align: left;">Total</th>
-
-
+                    <th colspan="9" style="text-align: left;">Total</th>
                     <th colspan="1" style="text-align: center;">
-                        {{ number_format($totalDue, 2) }} টাকা
-                    </th>
-                    <th colspan="1" style="text-align: center;">
-                        {{ number_format($totalPaid, 2) }} টাকা
+                        {{ number_format($totalProfit, 2) }} টাকা
                     </th>
                 </tr>
             </tfoot>

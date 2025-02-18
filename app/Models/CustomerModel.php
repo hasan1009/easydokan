@@ -15,27 +15,26 @@ class CustomerModel extends Model
         return self::find($id);
     }
 
-    static public function getSupplier()
+    static public function getCustomer($filters = [])
     {
-        $return = SupplierModel::select('customer.*');
-            
-
-        if (!empty(Request::get('name'))) {
-            $return = $return->where('name', 'like', '%' . Request::get('name') . '%');
+        $return = CustomerModel::select('customer.*');
+    
+        // Apply filters from $filters array instead of Request::get()
+        if (!empty($filters['name'])) {
+            $return = $return->where('name', 'like', '%' . $filters['name'] . '%');
         }
-
-        if (!empty(Request::get('mobile'))) {
-            $return = $return->where('mobile', 'like', '%' . Request::get('mobile') . '%');
+    
+        if (!empty($filters['mobile'])) {
+            $return = $return->where('mobile', 'like', '%' . $filters['mobile'] . '%');
         }
-
-        if (!empty(Request::get('id'))) {
-            $return = $return->where('id', '=', Request::get('id'));
+    
+        if (!empty($filters['id'])) {
+            $return = $return->where('id', '=', $filters['id']);
         }
-
-        $return = $return->orderBy('id', 'asc')->paginate(20);
-
-        return $return;
+    
+        return $return->orderBy('id', 'asc')->paginate(20);
     }
+    
 
     public function getProfileDirect() {
         if(!empty($this->photo) && file_exists('upload/customer/'.$this->photo)){

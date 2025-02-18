@@ -81,13 +81,23 @@
                                         <th>মোবাইল</th>
                                         <th>ব্যাংকের নাম</th>
                                         <th>একাউন্ট নম্বর</th>
-                                        <th>সাপ্লাইয়ারে পাবে</th>
+                                        <th>সাপ্লাইয়ার পাবে</th>
                                         <th>সাপ্লাইয়ারের কাছে পাবো</th>
                                         <th width=15% class="text-center">একশন</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @php
+                                        $totalPaid = 0;
+                                        $totalDue = 0;
+
+                                    @endphp
                                     @foreach ($getRecord as $value)
+                                        @php
+                                            $totalPaid += $value->paid;
+                                            $totalDue += $value->due;
+
+                                        @endphp
                                         <tr>
                                             <td class="text-center">{{ $value->id }}</td>
                                             @if (!empty($value->getProfileDirect()))
@@ -102,13 +112,17 @@
                                             <td>{{ $value->mobile }}</td>
                                             <td>{{ $value->bank_name }}</td>
                                             <td>{{ $value->bank_account_no }}</td>
-                                            <td>{{ number_format($value->due, 2) }} টাকা</td>
                                             <td>{{ number_format($value->paid, 2) }} টাকা</td>
+                                            <td>{{ number_format($value->due, 2) }} টাকা</td>
 
                                             <td>
                                                 <a href="{{ url('supplier/edit/' . $value->id) }}"
                                                     class="btn btn-default btn-rounded btn-sm"><span
                                                         class="fa fa-pencil"></a>
+                                                <button class="btn btn-primary btn-sm" data-toggle="modal"
+                                                    data-target="#purchaseModal{{ $value->id }}">
+                                                    দেনা / পাওনা
+                                                </button>
                                                 <form action="{{ url('supplier/delete/' . $value->id) }}" method="POST"
                                                     style="display: inline;">
                                                     @csrf
@@ -120,8 +134,103 @@
                                                 </form>
                                             </td>
                                         </tr>
+                                        <div class="modal fade" id="purchaseModal{{ $value->id }}" tabindex="-1"
+                                            role="dialog" aria-labelledby="purchaseModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                <div class="modal-content">
+                                                    <!-- Modal Header with Danger Background -->
+                                                    <div class="modal-header bg-primary text-white">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <h3 class="modal-title" id="purchaseModalLabel"
+                                                                    style="color: white">
+                                                                    {{ $value->name }} এর কাছে
+                                                                </h3>
+                                                                <h4 style="color: white">পূর্বের দেনাঃ
+                                                                    {{ number_format($value->paid, 2) }} টাকা
+                                                                </h4>
+                                                                <h4 style="color: white">পূর্বের পাওনাঃ
+                                                                    {{ number_format($value->due, 2) }} টাকা
+                                                                </h4>
+                                                            </div>
+                                                            <button type="button" class="close" style="color: white"
+                                                                data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Modal Body -->
+                                                    <div class="modal-body">
+                                                        <form action="{{ url('supplier/paiddue/' . $value->id) }}"
+                                                            method="POST">
+                                                            {{ csrf_field() }}
+                                                            <!-- Purchase Price Field -->
+                                                            <div class="form-group row">
+                                                                <label class="col-md-4 col-form-label text-md-right">নতুন
+                                                                    দেনা </label>
+                                                                <div class="col-md-8">
+                                                                    <div class="input-group">
+                                                                        <span
+                                                                            class="input-group-addon bg-light border"><span
+                                                                                class="fa fa-money"></span></span>
+                                                                        <input type="number" class="form-control"
+                                                                            name="paid" value="{{ old('paid') }}"
+                                                                            placeholder="0.0" step="0.01">
+                                                                    </div>
+                                                                    @if ($errors->has('paid'))
+                                                                        <small
+                                                                            class="text-danger">{{ $errors->first('paid') }}</small>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="form-group row">
+                                                                <label class="col-md-4 col-form-label text-md-right">নতুন
+                                                                    পাওনা </label>
+                                                                <div class="col-md-8">
+                                                                    <div class="input-group">
+                                                                        <span
+                                                                            class="input-group-addon bg-light border"><span
+                                                                                class="fa fa-money"></span></span>
+                                                                        <input type="number" class="form-control"
+                                                                            name="due" value="{{ old('due') }}"
+                                                                            placeholder="0.0" step="0.01">
+                                                                    </div>
+                                                                    @if ($errors->has('due'))
+                                                                        <small
+                                                                            class="text-danger">{{ $errors->first('due') }}</small>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Modal Footer -->
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                    data-dismiss="modal">বন্ধ করুন</button>
+                                                                <button type="submit" class="btn btn-primary">সংরক্ষণ
+                                                                    করুন</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     @endforeach
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="9" style="text-align: left;">Total</th>
+                                        <th colspan="1" style="text-align: center;">
+                                            {{ number_format($totalPaid, 2) }} টাকা
+                                        </th>
+
+                                        <th colspan="1" style="text-align: center;">
+                                            {{ number_format($totalDue, 2) }} টাকা
+                                        </th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>

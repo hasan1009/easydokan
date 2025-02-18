@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ProductsModel;
 use App\Models\SupplierModel;
+use App\Models\SellModel;
 
 use Str;
 
@@ -51,11 +52,16 @@ class ProductsController extends Controller
 
 
 
-    public function list()  {
-        
-        $data['getRecord']=ProductsModel::getProducts();
-        $data['getSupplier']=SupplierModel::getSupplier();
-        $data['header_title']="Products List";
+    public function list(Request $request) {
+        $filters = $request->all(); // Get all filters from request
+    
+        // Store filter values in session
+        session(['product_filters' => $filters]);
+    
+        $data['getRecord'] = ProductsModel::getProducts($filters);
+        $data['getSupplier'] = SupplierModel::getSupplier();
+        $data['header_title'] = "Products List";
+    
         return view('products.list', $data);
     }
 
@@ -132,10 +138,31 @@ class ProductsController extends Controller
     }
 
 
-    public function print()  {
-        $data['getRecord'] =  ProductsModel::getProducts();
-        $data['header_title']="Products Details";
-        return view('products.print',$data);
+    public function print() {
+        $filters = session('product_filters', []); // Retrieve filters from session
+    
+        $data['getRecord'] = ProductsModel::getProducts($filters);
+        $data['header_title'] = "Filtered Products Details";
+    
+        return view('products.print', $data);
+    }
+
+
+    
+    public function sell($id, Request $request)  {
+
+        $sell = new SellModel;
+        $sell->product_id = trim($request->product_id);
+        $sell->buy_price = trim($request->buy_price);
+        $sell->sell_price = trim($request->sell_price);
+        $sell->sell_quantity = trim($request->sell_quantity);
+        $sell->sell_date = trim($request->sell_date);
+        $sell->save();
+
+        $product = ProductsModel::getSingle($id);
+        $product->quantity = $product->quantity-$request->sell_quantity;
+        $product->save();
+        return back()->with('succsess', 'Product successfully updated.');
     }
 
 }

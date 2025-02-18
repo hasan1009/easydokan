@@ -15,30 +15,27 @@ class ProductsModel extends Model
         return self::find($id);
     }
 
-    static public function getProducts()
+    static public function getProducts($filters = [])
 {
     $return = ProductsModel::select('products.*', 'supplier.name as supplier_name')
         ->leftJoin('supplier', 'supplier.id', '=', 'products.supplier_id');
 
-  
-    if (!empty(Request::get('name'))) {
-        $return = $return->where('products.name', 'like', '%' . Request::get('name') . '%');
+    // Use $filters array instead of Request::get()
+    if (!empty($filters['name'])) {
+        $return = $return->where('products.name', 'like', '%' . $filters['name'] . '%');
     }
 
-   
-    if (!empty(Request::get('id'))) {
-        $return = $return->where('products.id', '=', Request::get('id'));
+    if (!empty($filters['id'])) {
+        $return = $return->where('products.id', '=', $filters['id']);
     }
 
-   
-    if (!empty(Request::get('supplier_id'))) {
-        $return = $return->where('products.supplier_id', '=', Request::get('supplier_id'));
+    if (!empty($filters['supplier_id'])) {
+        $return = $return->where('products.supplier_id', '=', $filters['supplier_id']);
     }
 
-    $return = $return->orderBy('products.id', 'asc')->paginate(20);
-
-    return $return;
+    return $return->orderBy('products.id', 'asc')->paginate(20);
 }
+
 
     
     

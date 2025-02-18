@@ -59,12 +59,18 @@ class SupplierController extends Controller
 }
 
 
-public function list()  {
-        
-    $data['getRecord']=SupplierModel::getSupplier();
-    $data['header_title']="Suppliers List";
+public function list(Request $request) {
+    $filters = $request->all(); // Get all filters from request
+
+    // Store filter values in session
+    session(['supplier_filters' => $filters]);
+
+    $data['getRecord'] = SupplierModel::getSupplier($filters);
+    $data['header_title'] = "Suppliers List";
+
     return view('supplier.list', $data);
 }
+
 
 
 public function edit($id)  {
@@ -111,11 +117,22 @@ public function update($id, Request $request)  {
     
 }
 
-public function print()  {
-    $data['getRecord'] =  SupplierModel::getSupplier();
-    $data['header_title']="Print Supplier";
-    return view('supplier.print',$data);
+public function print() {
+    $filters = session('supplier_filters', []); 
+
+    $data['getRecord'] = SupplierModel::getSupplier($filters);
+    $data['header_title'] = "Print Supplier";
+
+    return view('supplier.print', $data);
 }
+
+public function paiddue($id, Request $request){
+    $supplier =  SupplierModel::getSingle($id);
+    $supplier->paid =$supplier->paid + $request->paid;
+    $supplier->due =$supplier->due + $request->due;
+    $supplier->save();
+    return back()->with('succsess', 'Supplier successfully updated.');
+  } 
 
 
 }

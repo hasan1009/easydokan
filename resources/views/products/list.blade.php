@@ -6,8 +6,6 @@
         <li><a href="#">Home</a></li>
         <li class="active">Asset List</li>
     </ul>
-    <!-- END BREADCRUMB -->
-
     <!-- PAGE CONTENT WRAPPER -->
     <div class="page-content-wrap">
         <div class="row">
@@ -81,7 +79,17 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @php
+                                        $purchaseamount = 0;
+                                        $sellamount = 0;
+                                        $total = 0;
+                                    @endphp
                                     @foreach ($getRecord as $value)
+                                        @php
+                                            $purchaseamount += $value->purchase_price;
+                                            $sellamount += $value->sell_price;
+
+                                        @endphp
                                         <tr>
                                             <td class="text-center">{{ $value->id }}</td>
                                             @if (!empty($value->getProfileDirect()))
@@ -97,6 +105,7 @@
                                             <td>{{ $value->quantity }} {{ $value->unit }}</td>
                                             @php
                                                 $totalPrice = $value->purchase_price * $value->quantity;
+                                                $total += $totalPrice;
                                             @endphp
                                             <td>{{ number_format($totalPrice, 2) }} টাকা</td>
 
@@ -151,7 +160,7 @@
                                                         <div class="row">
                                                             <h3 class="modal-title" id="purchaseModalLabel"
                                                                 style="color: white">
-                                                                {{ $value->name }} - ক্রয়
+                                                                আজকের মোট ক্রয় ({{ $value->name }})
                                                             </h3>
                                                             <button type="button" class="close" style="color: white"
                                                                 data-dismiss="modal" aria-label="Close">
@@ -255,7 +264,7 @@
                                                                         <span class="input-group-addon"><span
                                                                                 class="fa fa-calendar"></span></span>
                                                                         <input type="date" class="form-control"
-                                                                            value="{{ old('purchase_date') }}"
+                                                                            value="{{ old('purchase_date', date('Y-m-d')) }}"
                                                                             placeholder="Unit Price" name="purchase_date">
                                                                     </div>
                                                                     <div style="color:red">
@@ -300,6 +309,7 @@
                                             </div>
                                         </div>
 
+
                                         {{-- ============================ --}}
 
                                         {{-- Sell modal --}}
@@ -308,11 +318,11 @@
                                             <div class="modal-dialog modal-dialog-centered" role="document">
                                                 <div class="modal-content">
                                                     <!-- Modal Header with Danger Background -->
-                                                    <div class="modal-header bg-primary text-white">
+                                                    <div class="modal-header bg-success text-white">
                                                         <div class="row">
                                                             <h3 class="modal-title" id="sellModalLabel"
                                                                 style="color: white">
-                                                                {{ $value->name }} - বিক্রয়
+                                                                আজকের মোট বিক্রয় ({{ $value->name }})
                                                             </h3>
                                                             <button type="button" class="close" style="color: white"
                                                                 data-dismiss="modal" aria-label="Close">
@@ -323,56 +333,13 @@
 
                                                     <!-- Modal Body -->
                                                     <div class="modal-body">
-                                                        <form action="{{ url('products/list/' . $value->id) }}"
+                                                        <form action="{{ route('products.sell', $value->id) }}"
                                                             method="POST">
                                                             {{ csrf_field() }}
                                                             <!-- Purchase Price Field -->
                                                             <div class="form-group row">
-                                                                <label class="col-md-4 col-form-label text-md-right">ক্রয়
-                                                                    মূল্য (প্রতি ইউনিট) <span
-                                                                        class="text-danger">*</span></label>
-                                                                <div class="col-md-8">
-                                                                    <div class="input-group">
-                                                                        <span
-                                                                            class="input-group-addon bg-light border"><span
-                                                                                class="fa fa-dollar"></span></span>
-                                                                        <input type="number" class="form-control"
-                                                                            name="purchase_price"
-                                                                            value="{{ old('purchase_price') }}"
-                                                                            placeholder="0.0" step="0.01" required>
-                                                                    </div>
-                                                                    @if ($errors->has('purchase_price'))
-                                                                        <small
-                                                                            class="text-danger">{{ $errors->first('purchase_price') }}</small>
-                                                                    @endif
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Selling Price Field -->
-                                                            <div class="form-group row">
-                                                                <label class="col-md-4 col-form-label text-md-right">বিক্রয়
-                                                                    মূল্য (প্রতি ইউনিট) <span
-                                                                        class="text-danger">*</span></label>
-                                                                <div class="col-md-8">
-                                                                    <div class="input-group">
-                                                                        <span
-                                                                            class="input-group-addon bg-light border"><span
-                                                                                class="fa fa-dollar"></span></span>
-                                                                        <input type="number" class="form-control"
-                                                                            name="sell_price"
-                                                                            value="{{ old('sell_price') }}"
-                                                                            placeholder="0.0" step="0.01" required>
-                                                                    </div>
-                                                                    @if ($errors->has('sell_price'))
-                                                                        <small
-                                                                            class="text-danger">{{ $errors->first('sell_price') }}</small>
-                                                                    @endif
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Purchase Quantity Field -->
-                                                            <div class="form-group row">
-                                                                <label class="col-md-4 col-form-label text-md-right">ক্রয়ের
+                                                                <label
+                                                                    class="col-md-4 col-form-label text-md-right">বিক্রয়ের
                                                                     পরিমান <span class="text-danger">*</span></label>
                                                                 <div class="col-md-8">
                                                                     <div class="input-group">
@@ -380,74 +347,41 @@
                                                                             class="input-group-addon bg-light border"><span
                                                                                 class="fa fa-cubes"></span></span>
                                                                         <input type="number" class="form-control"
-                                                                            name="quantity" value="{{ old('quantity') }}"
-                                                                            placeholder="0" required>
+                                                                            name="sell_quantity"
+                                                                            value="{{ old('sell_quantity') }}"
+                                                                            placeholder="0.0" step="0.01" required>
                                                                     </div>
-                                                                    @if ($errors->has('quantity'))
+                                                                    @if ($errors->has('sell_quantity'))
                                                                         <small
-                                                                            class="text-danger">{{ $errors->first('quantity') }}</small>
+                                                                            class="text-danger">{{ $errors->first('sell_quantity') }}</small>
                                                                     @endif
                                                                 </div>
                                                             </div>
 
-
                                                             <div class="form-group row">
-                                                                <label class="col-md-4 col-form-label text-md-right">মেয়াদ
-                                                                    উত্তীর্ণের তারিখ </label>
-                                                                <div class="col-md-8">
-                                                                    <div class="input-group">
-                                                                        <span class="input-group-addon"><span
-                                                                                class="fa fa-calendar"></span></span>
-                                                                        <input type="date" class="form-control"
-                                                                            value="{{ old('expire_date') }}"
-                                                                            name="expire_date">
-                                                                    </div>
-                                                                    <div style="color:red">
-                                                                        {{ $errors->first('expire_date') }}</div>
-                                                                </div>
-                                                            </div>
-
-
-                                                            <div class="form-group row">
-                                                                <label class="col-md-4 col-form-label text-md-right">ক্রয়ের
+                                                                <label
+                                                                    class="col-md-4 col-form-label text-md-right">বিক্রয়ের
                                                                     তারিখ </label>
                                                                 <div class="col-md-8">
                                                                     <div class="input-group">
                                                                         <span class="input-group-addon"><span
                                                                                 class="fa fa-calendar"></span></span>
                                                                         <input type="date" class="form-control"
-                                                                            value="{{ old('purchase_date') }}"
-                                                                            placeholder="Unit Price" name="purchase_date">
+                                                                            name="sell_date"
+                                                                            value="{{ old('sell_date', date('Y-m-d')) }}"
+                                                                            placeholder="Unit Price" name="sell_date">
                                                                     </div>
                                                                     <div style="color:red">
-                                                                        {{ $errors->first('purchase_date') }}</div>
+                                                                        {{ $errors->first('sell_date') }}</div>
                                                                 </div>
                                                             </div>
+                                                            <input name="product_id" type="hidden"
+                                                                value="{{ $value->id }}">
+                                                            <input name="buy_price" type="hidden"
+                                                                value="{{ $value->purchase_price }}">
+                                                            <input name="sell_price" type="hidden"
+                                                                value="{{ $value->sell_price }}">
 
-                                                            <div class="form-group row">
-
-                                                                <label
-                                                                    class="col-md-4 col-form-label text-md-right">সিলেক্ট
-                                                                    সাপ্লাইয়ার</label>
-                                                                <div class="col-md-8">
-                                                                    <select name="supplier_id" class="form-control">
-                                                                        <span class="input-group-addon"><span
-                                                                                class="fa fa-unlock-alt"></span></span>
-                                                                        <option>
-                                                                            সাপ্লাইয়ার সেলেক্ট করুন
-                                                                        </option>
-                                                                        @foreach ($getSupplier as $supplier)
-                                                                            <option value="{{ $supplier->id }}"
-                                                                                {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
-                                                                                {{ $supplier->name }}
-                                                                            </option>
-                                                                        @endforeach
-
-                                                                    </select>
-                                                                </div>
-                                                                <div style="color:red">{{ $errors->first('supplier_id') }}
-                                                                </div>
-                                                            </div>
                                                             <!-- Modal Footer -->
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-secondary"
@@ -462,6 +396,25 @@
                                         </div>
                                     @endforeach
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="5" style="text-align: left;">Total</th>
+                                        <th colspan="1" style="text-align: center;">
+                                            {{ number_format($purchaseamount, 2) }} টাকা
+                                        </th>
+
+                                        <th colspan="1" style="text-align: center;">
+                                            {{ number_format($sellamount, 2) }} টাকা
+                                        </th>
+                                        <th colspan="1"></th>
+                                        <th colspan="1" style="text-align: center;">
+                                            {{ number_format($total, 2) }} টাকা
+                                        </th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
