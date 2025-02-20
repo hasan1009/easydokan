@@ -4,7 +4,7 @@
     <!-- START BREADCRUMB -->
     <ul class="breadcrumb">
         <li><a href="#">Home</a></li>
-        <li class="active">Customer List</li>
+        <li class="active">Employee List</li>
     </ul>
     <!-- END BREADCRUMB -->
 
@@ -14,7 +14,7 @@
             <div class="col-md-12">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title">সার্চ কাস্টমার</h3>
+                        <h3 class="panel-title">সার্চ কর্মকর্তা/কর্মচারী</h3>
                     </div>
                     <div class="panel-body">
                         <form method="get" action="">
@@ -26,13 +26,13 @@
                                             value="{{ Request::get('id') }}" placeholder="ID">
                                     </div>
                                     <div class="form-group col-md-2">
-                                        <label>কাস্টমারের নাম</label>
+                                        <label>কর্মকর্তা/কর্মচারীর নাম</label>
                                         <input type="text" class="form-control" name="name"
                                             value="{{ Request::get('name') }}" placeholder="Name">
                                     </div>
 
                                     <div class="form-group col-md-2">
-                                        <label>কাস্টমারের মোবাইল</label>
+                                        <label>কর্মকর্তা/কর্মচারীর মোবাইল</label>
                                         <input type="number" class="form-control" name="mobile"
                                             value="{{ Request::get('mobile') }}" placeholder="Mobile">
                                     </div>
@@ -42,7 +42,7 @@
                                         <button class="btm btn-primary" type="submit"
                                             style="margin-top:25px;">Search</button>
 
-                                        <a href="{{ url('customer/list') }}" class="btm btn-success" type="submit"
+                                        <a href="{{ url('employee/list') }}" class="btm btn-success" type="submit"
                                             style="margin-top:35px; padding: 4px 15px;">Clear</a>
                                     </div>
                                 </div>
@@ -57,11 +57,11 @@
                 @include('_message')
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title">গ্রাহকের লিস্ট (মোট : {{ $getRecord->total() }})</h3>
-                        <a href="{{ url('customer/print') }}" class="btn btn-info pull-right" style="margin-left: 5px"
+                        <h3 class="panel-title">কর্মকর্তা/কর্মচারীর লিস্ট (মোট : {{ $getRecord->total() }})</h3>
+                        <a href="{{ url('employee/print') }}" class="btn btn-info pull-right" style="margin-left: 5px"
                             target="_blank">
                             <i class="fa fas fa-print"></i> প্রিন্ট </a>
-                        <a href="{{ url('customer/add') }}" class="btn btn-danger pull-right">+ এড কাস্টমার</a>
+                        <a href="{{ url('employee/add') }}" class="btn btn-danger pull-right">+ এড কর্মকর্তা/কর্মচারীর</a>
                     </div>
                     <div class="panel-body panel-body-table">
                         <div class="table-responsive">
@@ -70,25 +70,22 @@
                                     <tr>
                                         <th width='50'>আইডি</th>
                                         <th>ছবি</th>
-                                        <th>গ্রাহকের নাম</th>
-                                        <th>গ্রাহকের ঠিকানা</th>
+                                        <th>কর্মকর্তা/কর্মচারীর নাম</th>
+                                        <th>কর্মকর্তা/কর্মচারীর ঠিকানা</th>
                                         <th>মোবাইল</th>
-                                        <th>গ্রাহকের কাছে পাওনা</th>
-                                        <th>গ্রাহকের পাবে</th>
+                                        <th>কর্মকর্তা/কর্মচারীর পদবী</th>
+                                        <th>কর্মকর্তা/কর্মচারীর বেতন</th>
+                                        <th>মোট ছুটি</th>
                                         <th width=17% class="text-center">একশন</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @php
-                                        $totalDue = 0;
-                                        $totalPaid = 0;
-
+                                        $totalSalary = 0;
                                     @endphp
                                     @foreach ($getRecord as $value)
                                         @php
-                                            $totalDue += $value->due;
-                                            $totalPaid += $value->paid;
-
+                                            $totalSalary += $value->salary;
                                         @endphp
                                         <tr>
                                             <td class="text-center">{{ $value->id }}</td>
@@ -100,21 +97,22 @@
                                             <td>{{ $value->name }}</td>
                                             <td>{{ $value->address }}</td>
                                             <td>{{ $value->mobile }}</td>
-                                            <td>{{ number_format($value->due, 2) }} টাকা</td>
-                                            <td>{{ number_format($value->paid, 2) }} টাকা</td>
+                                            <td>{{ $value->designation }}</td>
+                                            <td>{{ number_format($value->salary, 2) }} টাকা</td>
+                                            <td>{{ $value->holyday }} দিন</td>
                                             <td>
-                                                <a href="{{ url('customer/edit/' . $value->id) }}"
+                                                <a href="{{ url('employee/edit/' . $value->id) }}"
                                                     class="btn btn-default btn-rounded btn-sm"><span
                                                         class="fa fa-pencil"></a>
-                                                <button class="btn btn-primary btn-sm" data-toggle="modal"
+                                                {{-- <button class="btn btn-primary btn-sm" data-toggle="modal"
                                                     data-target="#purchaseModal{{ $value->id }}">
                                                     দেনা / বাকী
-                                                </button>
-                                                <button class="btn btn-success btn-sm" data-toggle="modal"
+                                                </button> --}}
+                                                {{-- <button class="btn btn-success btn-sm" data-toggle="modal"
                                                     data-target="#smsModal{{ $value->id }}">
                                                     SMS
-                                                </button>
-                                                <form action="{{ url('customer/delete/' . $value->id) }}" method="POST"
+                                                </button> --}}
+                                                <form action="{{ url('employee/delete/' . $value->id) }}" method="POST"
                                                     style="display: inline;">
                                                     @csrf
                                                     @method('DELETE')
@@ -126,7 +124,7 @@
                                             </td>
                                         </tr>
 
-                                        <div class="modal fade" id="purchaseModal{{ $value->id }}" tabindex="-1"
+                                        {{-- <div class="modal fade" id="purchaseModal{{ $value->id }}" tabindex="-1"
                                             role="dialog" aria-labelledby="purchaseModalLabel" aria-hidden="true">
                                             <div class="modal-dialog modal-dialog-centered" role="document">
                                                 <div class="modal-content">
@@ -208,12 +206,12 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> --}}
 
                                         {{-- SMS Model  --}}
 
 
-                                        <div class="modal fade" id="smsModal{{ $value->id }}" tabindex="-1"
+                                        {{-- <div class="modal fade" id="smsModal{{ $value->id }}" tabindex="-1"
                                             role="dialog" aria-labelledby="smsModalLabel" aria-hidden="true">
                                             <div class="modal-dialog modal-dialog-centered" role="document">
                                                 <div class="modal-content">
@@ -260,20 +258,19 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> --}}
                                     @endforeach
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <th colspan="5" style="text-align: left;">Total</th>
+                                        <th colspan="6" style="text-align: left;">Total Salary</th>
 
 
                                         <th colspan="1" style="text-align: center;">
-                                            {{ number_format($totalDue, 2) }} টাকা
+                                            {{ number_format($totalSalary, 2) }} টাকা
                                         </th>
-                                        <th colspan="1" style="text-align: center;">
-                                            {{ number_format($totalPaid, 2) }} টাকা
-                                        </th>
+
+                                        <th></th>
                                         <th></th>
                                     </tr>
                                 </tfoot>

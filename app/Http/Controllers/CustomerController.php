@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CustomerModel;
 use Str;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CustomerController extends Controller
 {
@@ -105,7 +107,7 @@ public function update($id, Request $request)  {
 }
 
 public function print() {
-    $filters = session('customer_filters', []); // Retrieve filters from session
+    $filters = session('customer_filters', []); 
 
     $data['getRecord'] = CustomerModel::getCustomer($filters);
     $data['header_title'] = "Print Customer";
@@ -122,4 +124,39 @@ public function print() {
 
     return back()->with('succsess', 'Customer successfully updated.');
   } 
+
+
+
+public function sendSms(Request $request, $id)
+{
+    try {
+        Log::info("Sending SMS to: " . $request->mobile);
+        Log::info("Message: " . $request->message);
+
+        $response = Http::withoutVerifying()->get('http://bulksms.smsvaults.work:7788/sendtext', [
+            'apikey' => 'a4366c2fceb37765',
+            'secretkey' => '311bd5f3',
+            'callerID' => '12345',
+            'toUser' => $request->mobile,
+            'messageContent' => $request->message
+        ]);
+
+        // Log response from API
+        Log::info("SMS API Response: " . $response->body());
+
+        if ($response->successful()) {
+            return back()->with('succsess', 'SMS sent successfully.');
+        } else {
+            return back()->with('error', 'SMS sending failed: ' . $response->body());
+        }
+    } catch (\Exception $e) {
+        Log::error("SMS API Error: " . $e->getMessage());
+        return back()->with('error', 'SMS পাঠাতে ব্যর্থ হয়েছে!');
+    }
 }
+
+
+}
+    
+  
+
